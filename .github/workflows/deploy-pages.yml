@@ -1,0 +1,111 @@
+name: Deploy GovPDF Editor Web V3.6.3.1
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - name: Build pinned offline PDF core
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -rf vendor LICENSES .coretmp _site
+          mkdir -p vendor LICENSES .coretmp/pdfjs .coretmp/pdflib .coretmp/jszip
+          verify_sri() {
+            file="$1"
+            expected="$2"
+            actual="sha512-$(openssl dgst -sha512 -binary "$file" | openssl base64 -A)"
+            if [ "$actual" != "$expected" ]; then
+              echo "Integrity verification FAILED for $file" >&2
+              echo "Expected: $expected" >&2
+              echo "Actual:   $actual" >&2
+              exit 1
+            fi
+            echo "Integrity OK: $file"
+          }
+
+          curl -fL --retry 3 -o .coretmp/pdfjs.tgz https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.2.108.tgz
+          verify_sri .coretmp/pdfjs.tgz 'sha512-YxFb+SQcodN2rnX9Tn3dHYlqfb7NjlzzfONPpJd+AKoKtUjEdevTfbC07d5TcczzOK6261auRkP/M8OBHs9vFQ=='
+          tar -xzf .coretmp/pdfjs.tgz -C .coretmp/pdfjs
+          cp .coretmp/pdfjs/package/build/pdf.min.mjs vendor/pdf.min.mjs
+          cp .coretmp/pdfjs/package/build/pdf.worker.min.mjs vendor/pdf.worker.min.mjs
+          cp -R .coretmp/pdfjs/package/cmaps vendor/cmaps
+          cp -R .coretmp/pdfjs/package/standard_fonts vendor/standard_fonts
+          cp -R .coretmp/pdfjs/package/wasm vendor/wasm
+          cp -R .coretmp/pdfjs/package/iccs vendor/iccs
+          cp .coretmp/pdfjs/package/LICENSE LICENSES/PDFJS_LICENSE.txt
+
+          curl -fL --retry 3 -o .coretmp/pdflib.tgz https://registry.npmjs.org/pdf-lib/-/pdf-lib-1.17.1.tgz
+          verify_sri .coretmp/pdflib.tgz 'sha512-V/mpyJAoTsN4cnP31vc0wfNA1+p20evqqnap0KLoRUN0Yk/p3wN52DOEsL4oBFcLdb76hlpKPtzJIgo67j/XLw=='
+          tar -xzf .coretmp/pdflib.tgz -C .coretmp/pdflib
+          cp .coretmp/pdflib/package/dist/pdf-lib.min.js vendor/pdf-lib.min.js
+          cp .coretmp/pdflib/package/LICENSE.md LICENSES/PDFLIB_LICENSE.txt
+
+          curl -fL --retry 3 -o .coretmp/jszip.tgz https://registry.npmjs.org/jszip/-/jszip-3.10.1.tgz
+          verify_sri .coretmp/jszip.tgz 'sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g=='
+          tar -xzf .coretmp/jszip.tgz -C .coretmp/jszip
+          cp .coretmp/jszip/package/dist/jszip.min.js vendor/jszip.min.js
+          cp .coretmp/jszip/package/LICENSE.markdown LICENSES/JSZIP_LICENSE.txt
+
+          printf 'PDF.js 6.2.108\npdf-lib 1.17.1\nJSZip 3.10.1\n' > vendor/CORE_VERSION.txt
+          sha256sum vendor/pdf.min.mjs vendor/pdf.worker.min.mjs vendor/pdf-lib.min.js vendor/jszip.min.js \
+            | sed 's#vendor/##' > vendor/CORE_FILES.sha256
+          test -s vendor/CORE_FILES.sha256
+          test -n "$(find vendor/cmaps -type f -print -quit)"
+          test -n "$(find vendor/standard_fonts -type f -print -quit)"
+          test -n "$(find vendor/wasm -type f -print -quit)"
+          test -n "$(find vendor/iccs -type f -print -quit)"
+
+      - name: Build Pages site
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p _site
+          cp index.html styles.css app-v3.6.3.1.js boot-watch.js icon.svg manifest.webmanifest .nojekyll VERSION.txt THIRD_PARTY_NOTICES.txt CORE_INTEGRITY.txt _site/
+          cp -R vendor LICENSES _site/
+          if grep -RE "cdn\.jsdelivr\.net|unpkg\.com" _site/app-v3.6.3.1.js; then
+            echo "Unexpected external CDN reference found in runtime."
+            exit 1
+          fi
+          test -s _site/vendor/pdf.min.mjs
+          test -s _site/vendor/pdf.worker.min.mjs
+          test -s _site/vendor/pdf-lib.min.js
+          test -s _site/vendor/jszip.min.js
+          test -s _site/vendor/CORE_FILES.sha256
+
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0

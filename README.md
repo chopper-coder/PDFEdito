@@ -12,7 +12,7 @@
 
 GitHub Pages：
 
-**https://chopper-coder.github.io/PDFEditor/**
+**https://chopper-coder.github.io/PDFEdito/**
 
 > 若網站剛更新但仍看到舊版，可使用 `Ctrl + F5` 強制重新整理。
 

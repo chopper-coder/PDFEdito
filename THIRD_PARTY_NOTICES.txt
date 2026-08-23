@@ -1,0 +1,21 @@
+GovPDF Editor Web V3.6.3.1 - Third Party Notices
+============================================
+
+1. PDF.js / pdfjs-dist 6.2.108
+   License: Apache License 2.0
+   Runtime files, CMaps, standard fonts, WASM / ICC assets and related license
+   are installed into vendor/ and LICENSES/ by the local preparation script or
+   by the GitHub Pages workflow.
+
+2. pdf-lib 1.17.1
+   License: MIT License
+   Runtime file and license are installed into vendor/ and LICENSES/.
+
+3. JSZip 3.10.1
+   License: MIT OR GPL-3.0-or-later
+   GovPDF Editor Web uses JSZip under the MIT license option.
+   Runtime file and license are installed into vendor/ and LICENSES/.
+
+GovPDF Editor Web application code is not automatically relicensed by the
+third-party licenses above. Keep the third-party license notices when
+redistributing their bundled files.

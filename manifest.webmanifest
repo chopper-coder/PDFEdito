@@ -1,0 +1,17 @@
+{
+  "name": "GovPDF Editor Web V3.6.3.1｜Security & Reliability Final Hotfix",
+  "short_name": "GovPDF V3.6.3.1",
+  "description": "GovPDF Editor V3.6.3.1：Recovery 修復、GitHub 隱私模式、本機伺服器強化、GovPDF 專案輸入限制、大型 PDF DOM 虛擬化與供應鏈固定。",
+  "start_url": "./?v=363",
+  "display": "standalone",
+  "background_color": "#fff7fb",
+  "theme_color": "#fff7fb",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

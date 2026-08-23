@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#fff7fb" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none';" />
+  <title>GovPDF Editor Web V3.6.3.1｜Security & Reliability Final Hotfix</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css?v=3.6.3.1" />
+</head>
+<body>
+  <main class="desktop-shell">
+    <section class="main-frame">
+      <div class="main-toolbar">
+        <span id="docStatus">尚未開啟 PDF</span>
+        <span id="libStatus" class="core-status">正在載入 PDF 核心…</span>
+      </div>
+
+      <div id="viewer" class="viewer drop-zone">
+        <div id="dropHint" class="drop-hint">
+          <div class="drop-icon">📄</div>
+          <div>請按「開啟 PDF」</div>
+          <div>或把 PDF 檔案拖進視窗</div>
+          <small>PDF 全程在瀏覽器本機處理，不會上傳伺服器。</small>
+        </div>
+        <div id="stageWrap" class="stage-wrap hidden">
+          <div id="pagesContainer" class="pages-container"></div>
+        </div>
+      </div>
+
+      <!-- JS 相容用：原單機版不顯示這些控制，但保留功能 -->
+      <div class="compat-hidden" aria-hidden="true">
+        <div id="thumbList"></div><span id="pageCount">0 頁</span>
+        <button id="redoBtn"></button><button id="fitBtn"></button>
+        <button id="movePageUpBtn"></button><button id="movePageDownBtn"></button>
+        <button id="prevBtn"></button><button id="nextBtn"></button><span id="pageLabel"></span>
+        <div id="stage"></div><canvas id="pdfCanvas"></canvas><div id="textHitLayer"></div><div id="overlay"></div>
+      </div>
+    </section>
+
+    <aside class="side-frame">
+      <div class="side-scroll">
+        <h1 class="side-title">🌸 GovPDF Editor</h1>
+        <div class="version-line">Web V3.6.3.1｜Security & Reliability Final Hotfix</div>
+
+        <button id="openBtn" class="side-btn primary">📂 開啟 PDF</button>
+        <button class="side-btn tool active" data-tool="select">📄 編輯 / 預覽</button>
+        <button id="organizeBtn" class="side-btn">🗂 組織頁面</button>
+
+        <div class="section-title">🌼 穩定性 / 效能</div>
+        <label class="field-stack">效能模式
+          <select id="performanceMode">
+            <option value="auto" selected>自動（建議）</option>
+            <option value="quality">畫質優先</option>
+            <option value="balanced">平衡</option>
+            <option value="large">大型 PDF 高效能</option>
+          </select>
+        </label>
+        <div id="performanceStatus" class="mini-status">效能：等待文件</div>
+        <div id="autoSaveStatus" class="mini-status">自動儲存：待命</div>
+        <div class="inline-tools jump-tools">
+          <input id="jumpPageInput" type="number" min="1" value="1" aria-label="跳到頁碼" />
+          <button id="jumpPageBtn" type="button" class="side-btn compact">跳到頁面</button>
+        </div>
+
+        <div class="section-title">🌼 頁面操作</div>
+        <div class="page-grid">
+          <button id="sidePrevBtn" class="side-btn compact">⬅ 上一頁</button>
+          <button id="sideNextBtn" class="side-btn compact">下一頁 ➡</button>
+          <button id="zoomOutBtn" class="side-btn compact">🔎 縮小</button>
+          <button id="zoomInBtn" class="side-btn compact">🔍 放大</button>
+          <button id="rotateLeftBtn" class="side-btn compact">↺ 左轉</button>
+          <button id="rotateRightBtn" class="side-btn compact">↻ 右轉</button>
+        </div>
+        <div class="zoom-readout">目前縮放：<strong id="zoomLabel">100%</strong></div>
+        <button id="deletePageBtn" class="side-btn danger">🗑 刪除此頁</button>
+
+        <div class="section-title">🌼 文件工具</div>
+        <button id="mergeBtn" class="side-btn">➕ 合併 PDF</button>
+        <button id="insertBtn" class="side-btn">📎 插入 PDF 到目前頁後</button>
+        <button id="addPageBtn" class="side-btn">➕ 新增空白頁</button>
+        <div class="inline-tools">
+          <button id="saveProjectBtn" class="side-btn compact">💼 儲存專案</button>
+          <button id="openProjectBtn" class="side-btn compact">📂 開啟專案</button>
+        </div>
+        <button id="wordBtn" class="side-btn primary">📝 PDF 轉 Word</button>
+        <button id="watermarkBtn" class="side-btn">💧 加浮水印</button>
+        <button id="pageNumberBtn" class="side-btn">🔢 統一加入頁碼</button>
+        <div id="pageNumberStatus" class="mini-status">頁碼：未套用</div>
+        <button id="undoBtn" class="side-btn">↩ 復原上一步</button>
+
+        <div class="section-title">🌼 色塊 / 遮罩</div>
+        <button class="side-btn primary tool" data-tool="block">⬜ 新增一般色塊（非塗銷）</button>
+        <button class="side-btn danger tool" data-tool="redact">🔒 永久塗銷（匯出後不可還原）</button>
+        <div class="field-row">
+          <label for="blockColor">色塊顏色</label>
+          <select id="blockColor">
+            <option value="#ffffff" selected>白色</option>
+            <option value="#000000">黑色色塊（非塗銷）</option>
+            <option value="#808080">灰色</option>
+            <option value="#fff59d">黃色</option>
+            <option value="#ef5350">紅色</option>
+            <option value="#42a5f5">藍色</option>
+            <option value="#66bb6a">綠色</option>
+          </select>
+        </div>
+        <div id="blockSafetyHint" class="mini-status safety-hint">白色／彩色色塊只是視覺遮罩，原文字仍可搜尋；敏感資料請使用「永久塗銷」。</div>
+        <button id="deleteObjectBtn" class="side-btn danger">🗑 刪除選取色塊 / 物件</button>
+
+        <div class="section-title">🌼 精準物件工具</div>
+        <label class="metadata-check"><input id="snapEnabled" type="checkbox" checked /> 拖曳時自動吸附對齊</label>
+        <div id="objectSelectionStatus" class="mini-status">物件：未選取</div>
+        <div class="inline-tools">
+          <button id="lockObjectBtn" type="button" class="side-btn compact">🔒 鎖定 / 解鎖</button>
+          <button id="bringFrontBtn" type="button" class="side-btn compact">⬆ 置於最上層</button>
+        </div>
+        <button id="sendBackBtn" type="button" class="side-btn">⬇ 置於最下層</button>
+
+        <div class="section-title">🌼 文字</div>
+        <button class="side-btn tool" data-tool="edit-text">✏️ 文字修改</button>
+        <button class="side-btn tool" data-tool="text">➕ 新增文字</button>
+
+        <fieldset class="format-box">
+          <legend>新增文字格式</legend>
+          <label>字型
+            <select id="fontFamily">
+              <option value="Microsoft JhengHei">自動中文 / 微軟正黑體</option>
+              <option value="PMingLiU">新細明體</option>
+              <option value="DFKai-SB">標楷體</option>
+              <option value="Microsoft JhengHei UI">Microsoft JhengHei UI</option>
+              <option value="Arial">Arial</option>
+              <option value="Times New Roman">Times New Roman</option>
+            </select>
+          </label>
+          <label>大小
+            <input id="fontSize" type="number" min="6" max="96" value="16" />
+          </label>
+          <label>顏色
+            <select id="textColor">
+              <option value="#000000" selected>黑色</option>
+              <option value="#555555">深灰</option>
+              <option value="#d32f2f">紅色</option>
+              <option value="#1565c0">藍色</option>
+              <option value="#2e7d32">綠色</option>
+              <option value="#7b1fa2">紫色</option>
+            </select>
+          </label>
+          <div class="check-row">
+            <label><input id="boldText" type="checkbox" /> 粗體</label>
+            <label><input id="italicText" type="checkbox" /> 斜體</label>
+            <label><input id="underlineText" type="checkbox" /> 底線</label>
+          </div>
+          <label>對齊
+            <select id="textAlign">
+              <option value="left">靠左</option>
+              <option value="center">置中</option>
+              <option value="right">靠右</option>
+            </select>
+          </label>
+          <label>文字內容
+            <textarea id="textValue" rows="3" placeholder="輸入新增文字">新增文字</textarea>
+          </label>
+        </fieldset>
+
+        <button id="applyTextBtn" class="side-btn primary">✅ 套用目前輸入</button>
+        <button id="cancelModeBtn" class="side-btn">清除選取 / 取消模式</button>
+
+        <label class="metadata-check privacy-toggle"><input id="clearMetadata" type="checkbox" checked /> 🔐 隱私保護：匯出時清除來源文件屬性（建議）</label>
+        <div id="metadataPrivacyStatus" class="mini-status privacy-safe">Metadata：將清除來源 Title / Author / Subject / Keywords / Creator / Producer。</div>
+        <button id="exportBtn" class="side-btn primary export-btn" disabled>💾 匯出 PDF</button>
+
+        <div id="hintText" class="hint-box">請先開啟 PDF。</div>
+        <div class="privacy-note">🔒 PDF 僅在瀏覽器本機處理｜不會上傳</div>
+      </div>
+    </aside>
+  </main>
+
+  <input id="fileInput" type="file" accept="application/pdf,.pdf" hidden />
+  <input id="mergeInput" type="file" accept="application/pdf,.pdf" multiple hidden />
+  <input id="insertInput" type="file" accept="application/pdf,.pdf" hidden />
+  <input id="projectInput" type="file" accept=".govpdf,application/zip" hidden />
+
+  <dialog id="textEditDialog" class="modal">
+    <form method="dialog" class="modal-card" id="textEditForm">
+      <div class="modal-head"><h3>修改原 PDF 文字</h3><button value="cancel" class="icon-btn" aria-label="關閉">✕</button></div>
+      <label>原文字<textarea id="originalTextValue" rows="3" readonly></textarea></label>
+      <label>新文字<textarea id="replacementTextValue" rows="4"></textarea></label>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn">取消</button><button id="confirmReplaceTextBtn" value="default" class="dialog-btn primary">套用修改</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="watermarkDialog" class="modal">
+    <form method="dialog" class="modal-card" id="watermarkForm">
+      <div class="modal-head"><h3>新增浮水印</h3><button value="cancel" class="icon-btn">✕</button></div>
+      <label>浮水印文字<input id="watermarkText" type="text" value="機關內部文件" /></label>
+      <div class="two-col">
+        <label>大小<input id="watermarkSize" type="number" min="12" max="120" value="44" /></label>
+        <label>顏色<input id="watermarkColor" type="color" value="#808080" /></label>
+      </div>
+      <div class="two-col">
+        <label>透明度<input id="watermarkOpacity" type="range" min="0.05" max="0.9" step="0.05" value="0.22" /></label>
+        <label>角度<input id="watermarkRotation" type="number" min="-180" max="180" value="-35" /></label>
+      </div>
+      <label>套用範圍<select id="watermarkScope"><option value="all">全部頁面</option><option value="current">目前頁面</option></select></label>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn">取消</button><button id="confirmWatermarkBtn" value="default" class="dialog-btn primary">加入浮水印</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="pageNumberDialog" class="modal">
+    <form method="dialog" class="modal-card" id="pageNumberForm">
+      <div class="modal-head"><h3>統一加入頁碼</h3><button value="cancel" class="icon-btn">✕</button></div>
+      <div class="two-col">
+        <label>位置
+          <select id="pageNumberPosition">
+            <option value="left">左下</option>
+            <option value="center" selected>底部置中</option>
+            <option value="right">右下</option>
+            <option value="outer">奇數右下 / 偶數左下</option>
+          </select>
+        </label>
+        <label>格式
+          <select id="pageNumberFormat">
+            <option value="number" selected>1</option>
+            <option value="total">1 / 100</option>
+            <option value="dash">- 1 -</option>
+            <option value="page">Page 1</option>
+            <option value="zhTotal">第 1 頁，共 100 頁</option>
+            <option value="roman">i、ii、iii…</option>
+          </select>
+        </label>
+      </div>
+      <div class="two-col">
+        <label>從文件第幾頁開始<input id="pageNumberFromPage" type="number" min="1" value="1" /></label>
+        <label>起始頁碼<input id="pageNumberStart" type="number" min="0" value="1" /></label>
+      </div>
+      <div class="two-col">
+        <label>字級<input id="pageNumberSize" type="number" min="6" max="48" value="11" /></label>
+        <label>距離頁面底部<input id="pageNumberMargin" type="number" min="4" max="100" value="20" /></label>
+      </div>
+      <label>顏色<input id="pageNumberColor" type="color" value="#333333" /></label>
+      <p class="modal-help">頁碼會依目前頁面順序自動計算；之後若重新排序或新增頁面，頁碼也會跟著更新。</p>
+      <div class="modal-actions"><button id="removePageNumbersBtn" type="button" class="dialog-btn danger">移除頁碼</button><button value="cancel" class="dialog-btn">取消</button><button id="confirmPageNumberBtn" value="default" class="dialog-btn primary">套用全部頁</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="addPageDialog" class="modal">
+    <form method="dialog" class="modal-card" id="addPageForm">
+      <div class="modal-head"><h3>新增空白頁</h3><button value="cancel" class="icon-btn">✕</button></div>
+      <label>插入位置
+        <select id="addPagePosition">
+          <option value="after" selected>目前頁後方</option>
+          <option value="before">目前頁前方</option>
+          <option value="end">文件最後</option>
+        </select>
+      </label>
+      <label>頁面尺寸
+        <select id="addPageSize">
+          <option value="same" selected>沿用目前頁尺寸</option>
+          <option value="a4p">A4 直式</option>
+          <option value="a4l">A4 橫式</option>
+        </select>
+      </label>
+      <label>新增頁數
+        <input id="addPageCount" type="number" min="1" max="50" value="1" />
+      </label>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn">取消</button><button id="confirmAddPageBtn" value="default" class="dialog-btn primary">新增頁面</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="wordDialog" class="modal">
+    <form method="dialog" class="modal-card" id="wordForm">
+      <div class="modal-head"><h3>PDF 轉 Word</h3><button value="cancel" class="icon-btn">✕</button></div>
+      <label class="radio-card"><input type="radio" name="wordMode" value="smart" checked /><span><strong>高保真可編輯</strong><small>依 PDF 文字座標重建行與段落。</small></span></label>
+      <label class="radio-card"><input type="radio" name="wordMode" value="editable" /><span><strong>內建可編輯</strong><small>優先取得文字內容。</small></span></label>
+      <label class="radio-card"><input type="radio" name="wordMode" value="image" /><span><strong>版面圖片模式</strong><small>每頁以圖片放入 Word，外觀最接近 PDF。</small></span></label>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn">取消</button><button id="confirmWordBtn" value="default" class="dialog-btn primary">開始轉換</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="organizerDialog" class="modal organizer-modal">
+    <form method="dialog" class="modal-card wide">
+      <div class="modal-head"><h3>🗂 組織頁面</h3><button value="cancel" class="icon-btn">✕</button></div>
+      <p class="modal-help">拖曳縮圖可重新排列；Ctrl / Shift 點選可多選，再使用下方批次操作。</p>
+      <div class="organizer-toolbar">
+        <button id="orgSelectAllBtn" type="button" class="dialog-btn">全選</button>
+        <button id="orgClearBtn" type="button" class="dialog-btn">取消選取</button>
+        <button id="orgRotateLeftBtn" type="button" class="dialog-btn">↺ 批次左轉</button>
+        <button id="orgRotateRightBtn" type="button" class="dialog-btn">↻ 批次右轉</button>
+        <button id="orgDuplicateBtn" type="button" class="dialog-btn">⧉ 複製選取頁</button>
+        <button id="orgDeleteBtn" type="button" class="dialog-btn danger">🗑 刪除選取頁</button>
+        <span id="orgSelectionStatus" class="organizer-selection-status">已選 0 頁</span>
+      </div>
+      <div id="organizerGrid" class="organizer-grid"></div>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn primary">完成</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="recoveryDialog" class="modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head"><h3>♻️ 偵測到未完成的編輯</h3></div>
+      <p id="recoveryInfo" class="modal-help">偵測到上次尚未匯出的 PDF 工作階段。</p>
+      <div class="modal-actions">
+        <button id="discardRecoveryBtn" type="button" class="dialog-btn danger">捨棄</button>
+        <button id="restoreRecoveryBtn" type="button" class="dialog-btn primary">恢復工作</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="preflightDialog" class="modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head"><h3>✅ 匯出前檢查</h3><button value="cancel" class="icon-btn">✕</button></div>
+      <div id="preflightSummary" class="preflight-summary"></div>
+      <p class="modal-help">一般新增文字、浮水印與一般色塊會以覆蓋層匯出，原 PDF 文字層仍保留；「修改原文字」與「永久塗銷」才會強制扁平化。若偵測到一般色塊仍保留底層文字，匯出前會再進行一次隱私確認。</p>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn">返回編輯</button><button id="confirmExportBtn" value="default" class="dialog-btn primary">確認匯出 PDF</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="privacyWarningDialog" class="modal privacy-warning-modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head"><h3>⚠️ 隱私安全確認</h3><button value="cancel" class="icon-btn" aria-label="關閉">✕</button></div>
+      <div id="privacyWarningSummary" class="privacy-warning-summary"></div>
+      <p class="modal-help"><strong>一般色塊只是視覺遮罩。</strong> 如果用它蓋住姓名、電話、身分證字號或其他敏感資訊，底層文字可能仍可被搜尋、複製或擷取。敏感資料應改用「🔒 永久塗銷」。</p>
+      <div class="modal-actions">
+        <button value="cancel" class="dialog-btn">返回檢查</button>
+        <button id="privacyProceedBtn" type="button" class="dialog-btn danger">我了解風險，仍要匯出</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+  <div id="busy" class="busy hidden">
+    <div class="spinner"></div>
+    <strong id="busyText">處理中…</strong>
+    <small id="busyDetail"></small>
+    <progress id="busyProgress" max="100" value="0" class="busy-progress hidden"></progress>
+    <button id="busyCancelBtn" type="button" class="busy-cancel hidden">取消作業</button>
+  </div>
+
+  <script src="boot-watch.js?v=3.6.3.1" defer></script>
+  <script type="module" src="app-v3.6.3.1.js?v=3.6.3.1"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 {
-  "name": "GovPDF Editor Web V3.6.3.1｜Security & Reliability Final Hotfix",
-  "short_name": "GovPDF V3.6.3.1",
-  "description": "GovPDF Editor V3.6.3.1：Recovery 修復、GitHub 隱私模式、本機伺服器強化、GovPDF 專案輸入限制、大型 PDF DOM 虛擬化與供應鏈固定。",
+  "name": "GovPDF Editor Web V3.6.4｜Image Insert & Resize Edition",
+  "short_name": "GovPDF V3.6.4",
+  "description": "GovPDF Editor V3.6.4：新增圖片插入、拖曳與縮放，並延續 V3.6.3.1 的安全與可靠度強化。",
   "start_url": "./?v=363",
   "display": "standalone",
   "background_color": "#fff7fb",

@@ -1,4 +1,4 @@
-GovPDF Editor Web V3.6.3.1 - Third Party Notices
+GovPDF Editor Web V3.6.4 - Third Party Notices
 ============================================
 
 1. PDF.js / pdfjs-dist 6.2.108

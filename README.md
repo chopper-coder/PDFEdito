@@ -1,4 +1,4 @@
-# GovPDF Editor Web V3.6.4｜Image Insert & Resize Edition
+# PDF Editor Web V3.6.4｜Image Insert & Resize Edition
 
 V3.6.4 以 V3.6.3.1 的安全與可靠度修正版為基礎，新增「插入圖片」功能，同時保留本機離線使用與 GitHub Pages 部署方式。
 

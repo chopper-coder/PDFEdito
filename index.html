@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#fff7fb" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none';" />
-  <title>GovPDF Editor Web V3.6.4｜Image Insert & Resize Edition</title>
+  <title>PDF Editor Web V3.7｜Modular Architecture & Maintainability Edition</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="styles.css?v=3.6.4" />
+  <link rel="stylesheet" href="styles.css?v=3.7.0" />
 </head>
 <body>
   <main class="desktop-shell">
@@ -42,8 +42,8 @@
 
     <aside class="side-frame">
       <div class="side-scroll">
-        <h1 class="side-title">🌸 GovPDF Editor</h1>
-        <div class="version-line">Web V3.6.4｜Image Insert & Resize Edition</div>
+        <h1 class="side-title">🌸 PDF Editor Web</h1>
+        <div class="version-line">Web V3.7｜Modular Architecture & Maintainability Edition</div>
 
         <button id="openBtn" class="side-btn primary">📂 開啟 PDF</button>
         <button class="side-btn tool active" data-tool="select">📄 編輯 / 預覽</button>
@@ -172,6 +172,8 @@
         <label class="metadata-check privacy-toggle"><input id="clearMetadata" type="checkbox" checked /> 🔐 隱私保護：匯出時清除來源文件屬性（建議）</label>
         <div id="metadataPrivacyStatus" class="mini-status privacy-safe">Metadata：將清除來源 Title / Author / Subject / Keywords / Creator / Producer。</div>
         <button id="exportBtn" class="side-btn primary export-btn" disabled>💾 匯出 PDF</button>
+        <button id="compressBtn" class="side-btn" disabled>📦 壓縮 PDF</button>
+        <div class="mini-status compression-note">壓縮版會將每頁影像化以縮小檔案；適合掃描／照片型 PDF。壓縮後文字可能無法搜尋或複製。</div>
 
         <div id="hintText" class="hint-box">請先開啟 PDF。</div>
         <div class="privacy-note">🔒 PDF 僅在瀏覽器本機處理｜不會上傳</div>
@@ -300,6 +302,29 @@
     </form>
   </dialog>
 
+  <dialog id="compressionDialog" class="modal">
+    <form method="dialog" class="modal-card">
+      <div class="modal-head"><h3>📦 壓縮 PDF</h3><button value="cancel" class="icon-btn" aria-label="關閉">✕</button></div>
+      <p class="modal-help"><strong>壓縮輸出會把每一頁重新轉成 JPEG 影像。</strong> 對掃描文件、照片很多的 PDF 通常能明顯縮小；純文字 PDF 不一定會變小。壓縮後原本的可搜尋文字、超連結、表單與向量物件可能不再保留。</p>
+      <div id="compressionSourceSize" class="mini-status">目前來源檔案合計：—</div>
+      <label>壓縮模式
+        <select id="compressionMode">
+          <option value="quality">畫質優先</option>
+          <option value="balanced" selected>平衡（建議）</option>
+          <option value="strong">高壓縮</option>
+          <option value="custom">自訂</option>
+        </select>
+      </label>
+      <div class="two-col">
+        <label>輸出解析度（DPI）<input id="compressionDpi" type="number" min="72" max="200" step="1" value="120" disabled /></label>
+        <label>JPEG 品質 <span id="compressionQualityValue">76%</span><input id="compressionQuality" type="range" min="0.40" max="0.95" step="0.01" value="0.76" disabled /></label>
+      </div>
+      <div id="compressionPresetInfo" class="mini-status">約 120 DPI / JPEG 76%｜建議一般使用，檔案大小與清晰度較均衡。</div>
+      <label class="metadata-check compression-ack"><input id="compressionAcknowledge" type="checkbox" /> 我了解壓縮版會將頁面影像化，文字搜尋／複製等能力可能消失。</label>
+      <div class="modal-actions"><button value="cancel" class="dialog-btn">取消</button><button id="confirmCompressionBtn" type="button" class="dialog-btn primary" disabled>開始壓縮並下載</button></div>
+    </form>
+  </dialog>
+
   <dialog id="recoveryDialog" class="modal">
     <form method="dialog" class="modal-card">
       <div class="modal-head"><h3>♻️ 偵測到未完成的編輯</h3></div>
@@ -341,7 +366,7 @@
     <button id="busyCancelBtn" type="button" class="busy-cancel hidden">取消作業</button>
   </div>
 
-  <script src="boot-watch.js?v=3.6.4" defer></script>
-  <script type="module" src="app-v3.6.4.js?v=3.6.4"></script>
+  <script src="boot-watch.js?v=3.7.0" defer></script>
+  <script type="module" src="app-v3.7.0.js?v=3.7.0"></script>
 </body>
 </html>

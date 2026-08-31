@@ -1,4 +1,4 @@
-GovPDF Editor Web V3.6.4 - Pinned Core Integrity
+PDF Editor Web V3.7 - Pinned Core Integrity
 
 PDF.js / pdfjs-dist 6.2.108
 sha512-YxFb+SQcodN2rnX9Tn3dHYlqfb7NjlzzfONPpJd+AKoKtUjEdevTfbC07d5TcczzOK6261auRkP/M8OBHs9vFQ==

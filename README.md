@@ -1,36 +1,63 @@
-# PDF Editor Web V3.6.4｜Image Insert & Resize Edition
+# PDF Editor Web V3.7
 
-V3.6.4 以 V3.6.3.1 的安全與可靠度修正版為基礎，新增「插入圖片」功能，同時保留本機離線使用與 GitHub Pages 部署方式。
+**Modular Architecture & Maintainability Edition**
 
-## V3.6.4 新增功能
+純前端 PDF 編輯工具，可直接部署到 GitHub Pages 使用。PDF 主要在使用者瀏覽器本機處理，不需要上傳到後端伺服器。
 
-- 新增 **🖼 插入圖片** 按鈕。
-- 支援 PNG、JPG / JPEG、WebP。
-- 圖片插入目前 PDF 頁面中央後，可直接用滑鼠拖曳移動。
-- 選取圖片後，可拖右下角控制點調整大小。
-- 圖片縮放預設維持原比例；按住 **Shift** 拖曳控制點可自由調整寬高。
-- 圖片可使用既有的鎖定、圖層、複製 / 貼上、Delete、方向鍵微調功能。
-- 圖片會納入復原 / 重做、自動儲存、GovPDF 專案與 PDF 匯出。
-- 一般圖片採覆蓋層方式匯出，不會因為只插入圖片就破壞原 PDF 文字層。
-- 圖片匯入時會移除來源圖片 Metadata，並限制檔案大小與最大解碼尺寸，降低大型圖片造成記憶體壓力的風險。
+## 線上功能
 
-## 圖片安全限制
+- 拖入 PDF、連續頁面瀏覽
+- 新增／移動文字
+- 插入圖片並調整大小
+- 一般色塊與永久塗銷
+- 頁面新增、刪除、旋轉、排序、合併、插入 PDF
+- 頁碼、浮水印
+- 大型 PDF 效能最佳化
+- PDF 壓縮輸出
+- `.govpdf` 專案檔
+- 匯出前 Privacy Guard 與 Metadata Privacy
 
-- 輸入圖片最大 30 MB。
-- 處理後單張圖片最大 20 MB。
-- 最大邊長 4096 px，最大約 1200 萬像素。
-- 不接受 SVG 或其他可包含主動內容的圖片格式。
-- GovPDF 專案會把圖片獨立存入 `images/`，不直接把大型 Base64 內容塞進 `project.json`。
+> ⚠️ 一般白色／黑色／彩色色塊只是視覺遮罩，底層文字仍可能被搜尋或複製。敏感資料請使用「永久塗銷」。
 
-## 原有主要功能
+## GitHub Pages 部署
 
-- PDF 拖曳開啟、合併、插入 PDF。
-- 多頁連續瀏覽與大型 PDF 虛擬化。
-- 新增 / 修改文字、色塊、浮水印。
-- 永久塗銷與 Privacy Guard。
-- 新增空白頁、頁面旋轉、刪除、重排、組織頁面。
-- 統一加入頁碼。
-- 自動儲存、Crash Recovery、`.govpdf` 專案。
-- PDF 轉 Word。
-- Metadata Privacy。
-- 固定 PDF.js / pdf-lib / JSZip 版本與完整性驗證。
+1. 將本資料夾內的所有檔案上傳到 GitHub Repository 根目錄。
+2. 確認有：`.github/workflows/deploy-pages.yml`。
+3. 到 **Settings → Pages → Build and deployment → Source** 選擇 **GitHub Actions**。
+4. 到 **Actions** 等待 `Deploy PDF Editor Web V3.7` 的 `build` 與 `deploy` 都顯示綠色勾勾。
+5. 開啟 GitHub Pages 網址即可使用。
+
+本版本的 GitHub Actions 會自動：
+
+- 下載固定版本 PDF.js 6.2.108、pdf-lib 1.17.1、JSZip 3.10.1
+- 驗證固定 SHA-512
+- 建立完整 `vendor/`
+- 產生 SHA-256 manifest
+- 部署 GitHub Pages
+
+因此 **不需要手動上傳 `vendor/`**。
+
+若 GitHub 網頁上傳時 `.github` 沒有出現，可使用根目錄的 `deploy-pages_workflow_backup.yml`，在 GitHub 手動建立：
+
+`.github/workflows/deploy-pages.yml`
+
+並把備份內容全部貼入。
+
+## 主要安全設計
+
+- Content Security Policy
+- Stored XSS 防護
+- 第三方套件 SHA-512 驗證
+- GitHub Pages Privacy Mode
+- Metadata Privacy Guard
+- 真正永久塗銷輸出
+- `.govpdf` 輸入驗證與限制
+- GitHub Actions 使用固定 commit SHA
+
+## 第三方套件
+
+- PDF.js 6.2.108 — Apache License 2.0
+- pdf-lib 1.17.1 — MIT License
+- JSZip 3.10.1 — MIT License
+
+詳見 `THIRD_PARTY_NOTICES.txt` 與 `CORE_INTEGRITY.txt`。

@@ -1,4 +1,4 @@
-name: Deploy GovPDF Editor Web V3.6.3.1
+name: Deploy PDF Editor Web V3.7
 
 on:
   push:
@@ -79,9 +79,10 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p _site
-          cp index.html styles.css app-v3.6.3.1.js boot-watch.js icon.svg manifest.webmanifest .nojekyll VERSION.txt THIRD_PARTY_NOTICES.txt CORE_INTEGRITY.txt _site/
+          cp index.html styles.css app-v3.7.0.js boot-watch.js icon.svg manifest.webmanifest .nojekyll VERSION.txt THIRD_PARTY_NOTICES.txt CORE_INTEGRITY.txt ARCHITECTURE.md _site/
+          cp -R src _site/
           cp -R vendor LICENSES _site/
-          if grep -RE "cdn\.jsdelivr\.net|unpkg\.com" _site/app-v3.6.3.1.js; then
+          if grep -RE "cdn\.jsdelivr\.net|unpkg\.com" _site/app-v3.7.0.js _site/src; then
             echo "Unexpected external CDN reference found in runtime."
             exit 1
           fi

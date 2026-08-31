@@ -1,8 +1,8 @@
 {
-  "name": "GovPDF Editor Web V3.6.4｜Image Insert & Resize Edition",
-  "short_name": "GovPDF V3.6.4",
-  "description": "GovPDF Editor V3.6.4：新增圖片插入、拖曳與縮放，並延續 V3.6.3.1 的安全與可靠度強化。",
-  "start_url": "./?v=363",
+  "name": "PDF Editor Web V3.7｜Modular Architecture & Maintainability Edition",
+  "short_name": "PDF Editor V3.7",
+  "description": "PDF Editor Web V3.7：重構為模組化架構，保留 PDF 壓縮、圖片插入、永久塗銷、隱私防護與大型 PDF 最佳化。",
+  "start_url": "./?v=370",
   "display": "standalone",
   "background_color": "#fff7fb",
   "theme_color": "#fff7fb",

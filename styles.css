@@ -64,8 +64,13 @@ body.fast-scrolling .pdf-page-canvas{image-rendering:auto}.performance-large .pd
 .pdf-page-placeholder{position:relative;flex:none;box-sizing:border-box;contain:strict;content-visibility:auto;contain-intrinsic-size:auto 900px;background:rgba(255,255,255,.16);border:1px dashed rgba(123,63,242,.08);border-radius:4px}
 .performance-large .pdf-page-placeholder{background:transparent;border-color:transparent}
 
-/* V3.6.4 inserted image objects */
+/* V3.7 image objects */
 .annotation.image{background:transparent;border-color:rgba(66,133,244,.9);overflow:visible;opacity:var(--anno-opacity,1)}
 .annotation.image .annotation-image-content{display:block;width:100%;height:100%;object-fit:fill;pointer-events:none;user-select:none;-webkit-user-drag:none}
 .annotation.image.selected{outline-color:#1976d2}
 .annotation.image .annotation-label{background:#1976d2}
+
+/* V3.7 PDF compression controls */
+.compression-note{margin-top:4px;padding:7px 8px;border-radius:7px;background:#f7f5ff;border:1px solid #ded8f3;text-align:left;line-height:1.45}
+.compression-ack{margin-top:10px;padding:9px;border-radius:8px;background:#fff8e8;border:1px solid #ecdcae;line-height:1.5}
+#compressionQuality{width:100%}

@@ -1,1 +1,1 @@
-GovPDF Editor Web V3.6.4｜Image Insert & Resize Edition
+PDF Editor Web V3.7｜Modular Architecture & Maintainability Edition
